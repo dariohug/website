@@ -14,14 +14,21 @@ Usage:
 Add content by committing files:
   * a blog post   -> content/blog/YYYY-MM-DD-title.md
   * a document    -> documents/<school>/<course>/<file>
+  * a carbonara   -> carbomap/restaurants/<name>.md (+ photo in carbomap/images/)
   * a new page    -> content/pages/<name>.md
 Then push; the GitHub Action rebuilds and deploys.
+
+The Google Maps key is read from the GOOGLE_MAPS_API_KEY environment variable
+at build time (set as a GitHub Actions secret); it is never stored in the repo.
+Without it the build still works — the Carbomap list view and filters function,
+only the map itself is disabled.
 """
 
 from __future__ import annotations
 
 import datetime as dt
-import html
+import json
+import os
 import re
 import shutil
 from email.utils import format_datetime
@@ -41,6 +48,7 @@ from pygments.util import ClassNotFound
 ROOT = Path(__file__).resolve().parent
 CONTENT = ROOT / "content"
 DOCUMENTS = ROOT / "documents"
+CARBOMAP = ROOT / "carbomap"
 TEMPLATES = ROOT / "templates"
 STATIC = ROOT / "static"
 OUTPUT = ROOT / "_site"
@@ -308,6 +316,61 @@ class Builder:
             content=body_html, videos=videos, current_path="/theater/",
         )
 
+    # ----- carbomap ------------------------------------------------------- #
+    def build_carbomap(self):
+        """Compile carbomap/restaurants/*.md into data.json + the map page."""
+        rest_dir = CARBOMAP / "restaurants"
+        restaurants = []
+        if rest_dir.exists():
+            for md_file in sorted(rest_dir.glob("*.md")):
+                if md_file.name.startswith("_") or md_file.name == "README.md":
+                    continue
+                meta, note_html, _ = read_doc(md_file)
+                if meta.get("draft"):
+                    continue
+                lat, lng = meta.get("lat"), meta.get("lng")
+                if lat is None or lng is None:
+                    print(f"  ! skipping {md_file.name}: missing lat/lng")
+                    continue
+                image_url = None
+                image = meta.get("image")
+                if image and (CARBOMAP / "images" / image).exists():
+                    image_url = "/carbomap/images/" + image
+                restaurants.append({
+                    "slug": slugify(meta.get("name", md_file.stem)),
+                    "name": meta.get("name", prettify(md_file.stem)),
+                    "lat": float(lat),
+                    "lng": float(lng),
+                    "city": meta.get("city", ""),
+                    "country": meta.get("country", ""),
+                    "rating": float(meta.get("rating", 0) or 0),
+                    "price": meta.get("price"),
+                    "currency": meta.get("currency", ""),
+                    "guanciale": bool(meta.get("guanciale", False)),
+                    "cream": bool(meta.get("cream", False)),
+                    "image": image_url,
+                    "date": str(meta.get("date")) if meta.get("date") else "",
+                    "note": note_html,
+                })
+        restaurants.sort(key=lambda r: (-r["rating"], r["name"].lower()))
+
+        # Copy the photos, write the data file the page fetches, render the page.
+        if (CARBOMAP / "images").exists():
+            shutil.copytree(CARBOMAP / "images", OUTPUT / "carbomap" / "images",
+                            dirs_exist_ok=True)
+        data_path = OUTPUT / "carbomap" / "data.json"
+        data_path.parent.mkdir(parents=True, exist_ok=True)
+        data_path.write_text(
+            json.dumps(restaurants, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        self.carbomap_count = len(restaurants)
+        self.render(
+            "carbomap/index.html", "carbomap.html",
+            page={"title": "Carbomap"}, count=len(restaurants),
+            maps_api_key=os.environ.get("GOOGLE_MAPS_API_KEY", ""),
+            current_path="/carbomap/",
+        )
+
     # ----- documents ------------------------------------------------------ #
     def folder_meta(self, directory: Path):
         readme = directory / "README.md"
@@ -436,9 +499,14 @@ def main():
     builder.build_pages()
     builder.build_blog()
     builder.build_theater()
+    builder.build_carbomap()
     builder.build_documents()
 
-    print(f"Built site into {OUTPUT}/ ({len(builder.posts)} blog post(s)).")
+    print(
+        f"Built site into {OUTPUT}/ "
+        f"({len(builder.posts)} blog post(s), "
+        f"{builder.carbomap_count} restaurant(s))."
+    )
 
 
 if __name__ == "__main__":

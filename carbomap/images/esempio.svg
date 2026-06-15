@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" role="img" aria-label="Example carbonara photo placeholder">
+  <rect width="320" height="320" fill="#f3ead7"/>
+  <circle cx="160" cy="160" r="120" fill="#fdfaf3" stroke="#e0d4ba" stroke-width="4"/>
+  <circle cx="160" cy="160" r="92" fill="#f7e9c6"/>
+  <g stroke="#e7c873" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.9">
+    <path d="M110 150 q50 -22 100 0"/>
+    <path d="M104 168 q56 -20 112 0"/>
+    <path d="M110 186 q50 -18 100 0"/>
+  </g>
+  <g fill="#7a5c2e">
+    <rect x="138" y="150" width="14" height="9" rx="2" transform="rotate(20 145 154)"/>
+    <rect x="172" y="172" width="14" height="9" rx="2" transform="rotate(-15 179 176)"/>
+    <rect x="150" y="184" width="12" height="8" rx="2" transform="rotate(35 156 188)"/>
+  </g>
+  <g fill="#3b3b3b" opacity="0.7">
+    <circle cx="132" cy="172" r="2.5"/><circle cx="190" cy="156" r="2.5"/>
+    <circle cx="168" cy="190" r="2.5"/><circle cx="148" cy="160" r="2.5"/>
+  </g>
+  <text x="160" y="290" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#8a7a55">example photo</text>
+</svg>

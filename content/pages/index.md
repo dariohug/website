@@ -11,9 +11,9 @@ to load, easy to maintain. Here you'll find:
 - **[Notes](/documents/)** — documents, scripts and notes from my
   Berufsmaturität, Passerelle and university time.
 - **[Theatre](/theater/)** — performances I've been part of.
+- **[Carbomap](/carbomap/)** — a map of carbonara, rated.
 
-Get in touch any time at
-[d.hugwagner@gmail.com](mailto:d.hugwagner@gmail.com).
+Find me on [LinkedIn](https://www.linkedin.com/in/dario-hug-744179234/).
 
 *(This intro is just a starting point — edit `content/pages/index.md` to make
 it yours.)*

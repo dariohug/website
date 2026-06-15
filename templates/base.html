@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/pygments.css">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }} — blog" href="/feed.xml">
+  {% block head_extra %}{% endblock %}
 </head>
 <body>
   <header class="site-header">
@@ -24,8 +25,9 @@
   </main>
 
   <footer class="site-footer">
-    <p>Contact: <a href="mailto:{{ site.email }}">{{ site.email }}</a></p>
+    <p>Contact: <a href="{{ site.linkedin }}" rel="me noopener" target="_blank">LinkedIn ↗</a></p>
     <p>© {{ now_year }} {{ site.author }}{% if site.footer_note %} · {{ site.footer_note }}{% endif %}</p>
   </footer>
+  {% block body_end %}{% endblock %}
 </body>
 </html>

@@ -2,7 +2,8 @@
 title: Dario Hug
 tagline: Personal site, notes & blog
 author: Dario Hug
-email: d.hugwagner@gmail.com
+# Contact is a LinkedIn link (no public email, to keep the inbox spam-free).
+linkedin: https://www.linkedin.com/in/dario-hug-744179234/
 url: https://dariohug.ch
 
 # Top navigation. Add a line here to add a new section to the menu.
@@ -16,6 +17,8 @@ nav:
     path: /documents/
   - title: Theater
     path: /theater/
+  - title: Carbomap
+    path: /carbomap/
 
-# Footer note (optional, shown next to the copyright/email).
+# Footer note (optional, shown next to the copyright).
 footer_note: ""
