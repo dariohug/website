@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="prose">
+  <h1>{{ page.title }}</h1>
+  {{ content|safe }}
+  {% if videos %}
+  <div class="videos">
+    {% for v in videos %}
+    <figure class="video">
+      <div class="video-embed">
+        <iframe src="https://www.youtube-nocookie.com/embed/{{ v.id }}"
+                title="{{ v.title or 'Performance' }}" loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+      </div>
+      {% if v.title or v.description %}
+      <figcaption>{% if v.title %}<strong>{{ v.title }}</strong>{% endif %}{% if v.description %} — {{ v.description }}{% endif %}</figcaption>
+      {% endif %}
+    </figure>
+    {% endfor %}
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,21 @@
+# Site-wide settings. Edit these freely.
+title: Dario Hug
+tagline: Personal site, notes & blog
+author: Dario Hug
+email: d.hugwagner@gmail.com
+url: https://dariohug.ch
+
+# Top navigation. Add a line here to add a new section to the menu.
+# `path` must start and end with "/" for section pages.
+nav:
+  - title: Home
+    path: /
+  - title: Blog
+    path: /blog/
+  - title: Notes
+    path: /documents/
+  - title: Theater
+    path: /theater/
+
+# Footer note (optional, shown next to the copyright/email).
+footer_note: ""

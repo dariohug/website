@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="prose">
+  <h1>Blog</h1>
+  {% if not posts %}
+  <p>No posts yet.</p>
+  {% endif %}
+  <ul class="post-list">
+    {% for post in posts %}
+    <li>
+      <span class="date">{{ post.date_iso }}</span>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+      {% if post.summary %}<p class="summary">{{ post.summary }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</article>
+{% endblock %}

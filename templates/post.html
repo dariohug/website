@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="prose post">
+  <h1>{{ post.title }}</h1>
+  <p class="meta">{{ post.date_iso }}{% if post.tags %} · {{ post.tags|join(', ') }}{% endif %}</p>
+  {{ post.html|safe }}
+  <p class="back"><a href="/blog/">← All posts</a></p>
+</article>
+{% endblock %}

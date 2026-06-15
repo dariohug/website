@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="prose">
+  <nav class="breadcrumbs">
+    {% for c in breadcrumbs %}
+      {%- if not loop.last %}<a href="{{ c.url }}">{{ c.label }}</a> / {% else %}<span>{{ c.label }}</span>{% endif -%}
+    {% endfor %}
+  </nav>
+
+  <h1>{{ page.title }}</h1>
+  {% if description %}{{ description|safe }}{% endif %}
+
+  {% if folders %}
+  <ul class="folder-list">
+    {% for f in folders %}
+    <li>
+      <a href="{{ f.url }}">{{ f.name }}/</a>
+      <span class="count">
+        {%- if f.n_sub %}{{ f.n_sub }} folder{{ 's' if f.n_sub != 1 }}{% endif %}
+        {%- if f.n_sub and f.n_file %}, {% endif %}
+        {%- if f.n_file %}{{ f.n_file }} file{{ 's' if f.n_file != 1 }}{% endif -%}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if files %}
+  <table class="file-list">
+    <thead><tr><th>File</th><th>Type</th><th>Size</th><th></th></tr></thead>
+    <tbody>
+      {% for f in files %}
+      <tr>
+        <td>{% if f.view_url %}<a href="{{ f.view_url }}">{{ f.name }}</a>{% else %}{{ f.name }}{% endif %}</td>
+        <td>{{ f.ext }}</td>
+        <td>{{ f.size }}</td>
+        <td><a href="{{ f.download_url }}" download>download</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if not folders and not files %}
+  <p>Nothing here yet.</p>
+  {% endif %}
+</article>
+{% endblock %}

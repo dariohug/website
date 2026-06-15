@@ -1,0 +1,6 @@
+# Build-time dependencies for build.py (the static site generator).
+# Install with: pip install -r requirements.txt
+Jinja2>=3.1
+Markdown>=3.5
+Pygments>=2.17
+PyYAML>=6.0

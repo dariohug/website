@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="prose file-view">
+  <nav class="breadcrumbs">
+    {% for c in breadcrumbs %}<a href="{{ c.url }}">{{ c.label }}</a> / {% endfor %}<span>{{ filename }}</span>
+  </nav>
+
+  <h1>{{ filename }}</h1>
+  <p class="actions">
+    <a href="{{ raw_url }}" download>Download</a>
+    {% if kind == 'pdf' %} · <a href="{{ raw_url }}" target="_blank" rel="noopener">Open in new tab</a>{% endif %}
+  </p>
+
+  {% if kind == 'pdf' %}
+  <div class="pdf-embed"><embed src="{{ raw_url }}" type="application/pdf"></div>
+  {% elif kind == 'code' %}
+  {{ code_html|safe }}
+  {% endif %}
+</article>
+{% endblock %}

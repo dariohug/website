@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% if page and page.title %}{{ page.title }} — {% endif %}{{ site.title }}{% endblock %}</title>
+  {% if site.tagline %}<meta name="description" content="{{ site.tagline }}">{% endif %}
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/pygments.css">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title }} — blog" href="/feed.xml">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="/">{{ site.title }}</a>
+    <nav class="site-nav">
+      {% for item in site.nav %}
+      <a href="{{ item.path }}"{% if is_active(item.path, current_path) %} class="active"{% endif %}>{{ item.title }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>Contact: <a href="mailto:{{ site.email }}">{{ site.email }}</a></p>
+    <p>© {{ now_year }} {{ site.author }}{% if site.footer_note %} · {{ site.footer_note }}{% endif %}</p>
+  </footer>
+</body>
+</html>
