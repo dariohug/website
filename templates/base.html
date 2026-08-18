@@ -7,7 +7,6 @@
   {% if site.tagline %}<meta name="description" content="{{ site.tagline }}">{% endif %}
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/pygments.css">
-  <link rel="alternate" type="application/rss+xml" title="{{ site.title }} — blog" href="/feed.xml">
   {% block head_extra %}{% endblock %}
 </head>
 <body>
@@ -15,7 +14,18 @@
     <a class="site-title" href="/">{{ site.title }}</a>
     <nav class="site-nav">
       {% for item in site.nav %}
+      {% if item.children %}
+      <details class="nav-group">
+        <summary{% if is_group_active(item, current_path) %} class="active"{% endif %}>{{ item.title }}</summary>
+        <ul>
+          {% for child in item.children %}
+          <li><a href="{{ child.path }}"{% if is_active(child.path, current_path) %} class="active"{% endif %}>{{ child.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% else %}
       <a href="{{ item.path }}"{% if is_active(item.path, current_path) %} class="active"{% endif %}>{{ item.title }}</a>
+      {% endif %}
       {% endfor %}
     </nav>
   </header>
@@ -28,6 +38,28 @@
     <p>Contact: <a href="{{ site.linkedin }}" rel="me noopener" target="_blank">LinkedIn ↗</a></p>
     <p>© {{ now_year }} {{ site.author }}{% if site.footer_note %} · {{ site.footer_note }}{% endif %}</p>
   </footer>
+
+  <script>
+    /* Nav dropdowns are plain <details>: they already open on click and on
+       Enter/Space. This only adds the two conveniences <details> lacks —
+       closing on Escape and on a click elsewhere on the page. */
+    (function () {
+      var groups = document.querySelectorAll(".nav-group");
+      if (!groups.length) return;
+      function closeAll(except) {
+        groups.forEach(function (g) { if (g !== except) g.open = false; });
+      }
+      groups.forEach(function (g) {
+        g.addEventListener("toggle", function () { if (g.open) closeAll(g); });
+      });
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest(".nav-group")) closeAll(null);
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeAll(null);
+      });
+    })();
+  </script>
   {% block body_end %}{% endblock %}
 </body>
 </html>

@@ -12,10 +12,10 @@ Usage:
     python -m http.server -d _site 8000  # preview at http://localhost:8000
 
 Add content by committing files:
-  * a blog post   -> content/blog/YYYY-MM-DD-title.md
+  * a new page    -> content/pages/<name>.md  (published at /<name>/)
   * a document    -> documents/<school>/<course>/<file>
   * a carbonara   -> carbomap/restaurants/<name>.md (+ photo in carbomap/images/)
-  * a new page    -> content/pages/<name>.md
+  * a performance -> a video entry in content/theater.md
 Then push; the GitHub Action rebuilds and deploys.
 
 The Google Maps key is read from the GOOGLE_MAPS_API_KEY environment variable
@@ -31,7 +31,6 @@ import json
 import os
 import re
 import shutil
-from email.utils import format_datetime
 from pathlib import Path
 
 import markdown
@@ -141,16 +140,6 @@ def human_size(num: int) -> str:
     return f"{size:.1f} GB"
 
 
-def to_date(value) -> dt.date:
-    if isinstance(value, dt.datetime):
-        return value.date()
-    if isinstance(value, dt.date):
-        return value
-    if value:
-        return dt.date.fromisoformat(str(value)[:10])
-    return dt.date.today()
-
-
 def youtube_id(value) -> str:
     """Accept a full YouTube URL or a bare 11-char id; return the id."""
     value = str(value).strip()
@@ -158,13 +147,6 @@ def youtube_id(value) -> str:
         return value
     m = re.search(r"(?:v=|youtu\.be/|embed/|shorts/|/v/)([A-Za-z0-9_-]{11})", value)
     return m.group(1) if m else ""
-
-
-def first_paragraph(html_text: str) -> str:
-    m = re.search(r"<p>(.*?)</p>", html_text, re.S)
-    if not m:
-        return ""
-    return re.sub(r"<[^>]+>", "", m.group(1)).strip()
 
 
 # --------------------------------------------------------------------------- #
@@ -183,12 +165,19 @@ class Builder:
         self.env.globals["site"] = config
         self.env.globals["now_year"] = dt.date.today().year
         self.env.globals["is_active"] = self._is_active
+        self.env.globals["is_group_active"] = self._is_group_active
 
     @staticmethod
     def _is_active(nav_path: str, current_path: str) -> bool:
         if nav_path == "/":
             return current_path == "/"
         return current_path == nav_path or current_path.startswith(nav_path)
+
+    @classmethod
+    def _is_group_active(cls, item: dict, current_path: str) -> bool:
+        """A dropdown is highlighted when the page is the section or any child."""
+        paths = [item.get("path")] + [c.get("path") for c in item.get("children") or []]
+        return any(p and cls._is_active(p, current_path) for p in paths)
 
     def render(self, out_relpath, template, **ctx):
         ctx.setdefault("current_path", "/")
@@ -222,7 +211,7 @@ class Builder:
                 self.render(
                     "index.html", "home.html",
                     page={"title": title}, content=body_html,
-                    posts=self.recent_posts, current_path="/",
+                    current_path="/",
                 )
             else:
                 self.render(
@@ -230,69 +219,6 @@ class Builder:
                     page={"title": title}, content=body_html,
                     current_path=f"/{md_file.stem}/",
                 )
-
-    # ----- blog ----------------------------------------------------------- #
-    def collect_posts(self):
-        blog_dir = CONTENT / "blog"
-        posts = []
-        if not blog_dir.exists():
-            self.posts = []
-            self.recent_posts = []
-            return
-        for md_file in sorted(blog_dir.glob("*.md")):
-            if md_file.name.startswith("_"):
-                continue
-            meta, body_html, _ = read_doc(md_file)
-            if meta.get("draft"):
-                continue
-            stem = md_file.stem
-            m = re.match(r"(\d{4}-\d{2}-\d{2})[-_]?(.*)", stem)
-            name_date, rest = (m.group(1), m.group(2)) if m else (None, stem)
-            date = to_date(meta.get("date") or name_date)
-            slug = slugify(meta.get("slug") or rest or stem)
-            summary = meta.get("summary") or first_paragraph(body_html)
-            posts.append({
-                "title": meta.get("title", prettify(slug)),
-                "date": date,
-                "date_iso": date.isoformat(),
-                "tags": meta.get("tags") or [],
-                "url": f"/blog/{slug}/",
-                "slug": slug,
-                "html": body_html,
-                "summary": summary,
-            })
-        posts.sort(key=lambda p: p["date"], reverse=True)
-        self.posts = posts
-        self.recent_posts = posts[:6]
-
-    def build_blog(self):
-        for post in self.posts:
-            self.render(
-                f"blog/{post['slug']}/index.html", "post.html",
-                page={"title": post["title"]}, post=post,
-                current_path="/blog/",
-            )
-        self.render(
-            "blog/index.html", "blog_index.html",
-            page={"title": "Blog"}, posts=self.posts, current_path="/blog/",
-        )
-        self.build_feed()
-
-    def build_feed(self):
-        base = self.config.get("url", "").rstrip("/")
-        items = []
-        for post in self.posts[:20]:
-            pub = format_datetime(
-                dt.datetime.combine(post["date"], dt.time(12, 0), dt.timezone.utc)
-            )
-            items.append({
-                "title": post["title"],
-                "link": base + post["url"],
-                "guid": base + post["url"],
-                "pub_date": pub,
-                "description": post["summary"] or post["title"],
-            })
-        self.render("feed.xml", "feed.xml", items=items, base=base)
 
     # ----- theater -------------------------------------------------------- #
     def build_theater(self):
@@ -495,17 +421,14 @@ def main():
 
     builder = Builder(config)
     builder.copy_static()
-    builder.collect_posts()   # must run before build_pages (home shows posts)
     builder.build_pages()
-    builder.build_blog()
     builder.build_theater()
     builder.build_carbomap()
     builder.build_documents()
 
     print(
         f"Built site into {OUTPUT}/ "
-        f"({len(builder.posts)} blog post(s), "
-        f"{builder.carbomap_count} restaurant(s))."
+        f"({builder.carbomap_count} restaurant(s))."
     )
 
 

@@ -47,10 +47,52 @@ body {
   text-decoration: none;
   color: var(--fg);
 }
-.site-nav { display: flex; flex-wrap: wrap; gap: 1.1rem; }
-.site-nav a { text-decoration: none; color: var(--muted); }
-.site-nav a:hover { color: var(--link); }
-.site-nav a.active { color: var(--fg); font-weight: 600; }
+.site-nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1.1rem; }
+.site-nav > a,
+.nav-group > summary { text-decoration: none; color: var(--muted); }
+.site-nav > a:hover,
+.nav-group > summary:hover { color: var(--link); }
+.site-nav > a.active,
+.nav-group > summary.active { color: var(--fg); font-weight: 600; }
+
+/* Dropdown menus. Plain <details>/<summary>, so they work without JavaScript
+   and are keyboard-operable; a tiny script in base.html closes them on Escape
+   or on a click outside. */
+.nav-group { position: relative; }
+.nav-group > summary {
+  cursor: pointer;
+  list-style: none;          /* hide the default triangle (Firefox) */
+  -webkit-user-select: none;
+  user-select: none;
+}
+.nav-group > summary::-webkit-details-marker { display: none; }
+.nav-group > summary::after { content: " ▾"; font-size: 0.75em; }
+.nav-group[open] > summary::after { content: " ▴"; }
+
+.nav-group > ul {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  min-width: 11rem;
+  margin: 0.45rem 0 0;
+  padding: 0.35rem 0;
+  list-style: none;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+.nav-group > ul a {
+  display: block;
+  padding: 0.35rem 0.9rem;
+  text-decoration: none;
+  color: var(--fg);
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+.nav-group > ul a:hover { background: var(--code-bg); color: var(--link); }
+.nav-group > ul a.active { font-weight: 600; }
 
 /* Links & typography */
 a { color: var(--link); }
@@ -85,15 +127,11 @@ pre, .highlight {
 }
 pre code, .highlight code { background: none; padding: 0; }
 
-/* Blog / post lists */
-.post-list { list-style: none; padding: 0; }
-.post-list li { margin-bottom: 1.1rem; }
-.post-list .date { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 0.6rem; }
-.post-list .summary { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.95rem; }
-.post .meta, .home-posts h2 { color: var(--muted); }
-.post .meta { font-size: 0.95rem; margin-top: -0.3rem; }
-.post .back { margin-top: 2.5rem; }
-.home-posts { margin-top: 2.5rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+/* Section index lists (e.g. the Projects overview) */
+.card-list { list-style: none; padding: 0; }
+.card-list li { padding: 0.7rem 0; border-bottom: 1px solid var(--rule); }
+.card-list a { font-weight: 600; text-decoration: none; }
+.card-list p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.95rem; }
 
 /* Documents: breadcrumbs, folder list, file table */
 .breadcrumbs { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.5rem; }
@@ -141,5 +179,19 @@ table.file-list td:nth-child(3) { color: var(--muted); font-size: 0.9rem; white-
 
 @media (max-width: 480px) {
   body { font-size: 17px; }
-  .site-header { flex-direction: column; gap: 0.4rem; }
+  .site-header { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+  .site-nav { gap: 0.4rem 1.1rem; }
+  /* On narrow screens the dropdown pushes the page down instead of floating
+     over it — no risk of it running off the edge. */
+  .nav-group { width: 100%; }
+  .nav-group > ul {
+    position: static;
+    min-width: 0;
+    margin: 0.2rem 0 0.3rem;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+  .nav-group > ul a { padding: 0.3rem 0 0.3rem 1rem; }
+  .nav-group > ul a:hover { background: none; }
 }

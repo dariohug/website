@@ -8,12 +8,33 @@ to GitHub Pages by a GitHub Action on every push to `main`.
 
 | I want to…            | Do this |
 |-----------------------|---------|
-| Write a **blog post** | Add `content/blog/YYYY-MM-DD-title.md` with a `--- title / date ---` header. |
+| Add a **page**        | Add `content/pages/<name>.md` with a `--- title: … ---` header; it appears at `/<name>/`. |
+| Add it to the **menu** | Add an entry to the `nav:` list in `site.yml` (see *Navigation* below). |
 | Add a **document**    | Open the course folder under `documents/`, **Add file → Upload files**, drag PDFs/code in. PDFs get an inline viewer, code gets highlighting, all get a download link. |
 | Add a **school/course** | Create a new folder under `documents/` (commit a file inside it). Add a `README.md` with `title:` for a nicer name. |
 | Add a **video**       | Add a YouTube link under `videos:` in `content/theater.md`. |
 | Add a **carbonara**   | Add `carbomap/restaurants/<name>.md` (+ optional photo in `carbomap/images/`). See `carbomap/README.md`. |
-| Edit a **page** or the menu | Edit `content/pages/*.md` or the `nav:` list in `site.yml`. |
+
+## Navigation
+
+The menu is the `nav:` list in `site.yml`. An entry with a `children:` list
+becomes a dropdown:
+
+```yaml
+nav:
+  - title: Projects
+    path: /projects/          # the section's own page
+    children:
+      - title: All projects
+        path: /projects/
+      - title: Theatre
+        path: /theater/
+  - title: Contact
+    path: /contact/
+```
+
+Dropdowns are plain `<details>` elements — they work with the keyboard and
+without JavaScript.
 
 Push, and the site rebuilds and publishes in about a minute.
 
@@ -54,7 +75,7 @@ python -m http.server -d _site 8000   # preview at http://localhost:8000
 - `site.yml` — title, navigation, LinkedIn link, base URL.
 - `templates/` — Jinja2 HTML templates.
 - `static/css/` — stylesheets; `static/js/carbomap.js` — the map page script.
-- `content/` — pages, blog posts, theatre page (Markdown).
+- `content/pages/` — the pages (Markdown); `content/theater.md` — the theatre page.
 - `documents/` — uploaded files, organised in folders.
 - `carbomap/` — restaurant entries (`restaurants/`) and photos (`images/`).
 - `_site/` — build output (generated; not committed).

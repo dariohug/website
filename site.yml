@@ -1,6 +1,6 @@
 # Site-wide settings. Edit these freely.
 title: Dario Hug
-tagline: Personal site, notes & blog
+tagline: Personal site — projects, notes & documents
 author: Dario Hug
 # Contact is a LinkedIn link (no public email, to keep the inbox spam-free).
 linkedin: https://www.linkedin.com/in/dario-hug-744179234/
@@ -8,17 +8,28 @@ url: https://dariohug.ch
 
 # Top navigation. Add a line here to add a new section to the menu.
 # `path` must start and end with "/" for section pages.
+# An item with `children:` becomes a dropdown; the parent `path` is still a
+# real page (the section overview) and is shown as the first entry in the menu.
 nav:
-  - title: Home
-    path: /
-  - title: Blog
-    path: /blog/
-  - title: Notes
+  - title: Projects
+    path: /projects/
+    children:
+      - title: All projects
+        path: /projects/
+      - title: Theatre
+        path: /theater/
+      - title: Solar Racing
+        path: /solar-racing/
+      - title: Openairs
+        path: /openairs/
+      - title: Events
+        path: /events/
+      - title: Carbomap
+        path: /carbomap/
+  - title: Notes & documents
     path: /documents/
-  - title: Theater
-    path: /theater/
-  - title: Carbomap
-    path: /carbomap/
+  - title: Contact
+    path: /contact/
 
 # Footer note (optional, shown next to the copyright).
 footer_note: ""
