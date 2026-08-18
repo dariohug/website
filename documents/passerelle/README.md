@@ -2,5 +2,4 @@
 title: Passerelle
 ---
 
-Material from my Passerelle. Create a folder per subject/course and upload files
-into it.
+Material from the Passerelle at KME in Zurich, 2022. Most of my notes were taken quickly, so please keep in mind that there may be mistakes.

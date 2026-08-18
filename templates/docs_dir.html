@@ -17,8 +17,8 @@
       <a href="{{ f.url }}">{{ f.name }}/</a>
       <span class="count">
         {%- if f.n_sub %}{{ f.n_sub }} folder{{ 's' if f.n_sub != 1 }}{% endif %}
-        {%- if f.n_sub and f.n_file %}, {% endif %}
-        {%- if f.n_file %}{{ f.n_file }} file{{ 's' if f.n_file != 1 }}{% endif -%}
+        {%- if f.n_sub and f.n_file_total %}, {% endif %}
+        {%- if f.n_file_total %}{{ f.n_file_total }} file{{ 's' if f.n_file_total != 1 }} total{% endif -%}
       </span>
     </li>
     {% endfor %}

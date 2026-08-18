@@ -305,6 +305,19 @@ class Builder:
             return meta.get("title"), body_html
         return None, ""
 
+    @staticmethod
+    def _count_files_recursive(directory: Path) -> int:
+        """Count files (excluding IGNORE_NAMES and dotfiles) anywhere below directory."""
+        total = 0
+        for entry in directory.iterdir():
+            if entry.name.startswith("."):
+                continue
+            if entry.is_dir():
+                total += Builder._count_files_recursive(entry)
+            elif entry.is_file() and entry.name not in IGNORE_NAMES:
+                total += 1
+        return total
+
     def build_documents(self):
         if not DOCUMENTS.exists():
             return
@@ -324,13 +337,12 @@ class Builder:
             child_rel = rel / d.name
             child_title, _ = self.folder_meta(d)
             n_sub = sum(1 for p in d.iterdir() if p.is_dir() and not p.name.startswith("."))
-            n_file = sum(1 for p in d.iterdir()
-                         if p.is_file() and p.name not in IGNORE_NAMES and not p.name.startswith("."))
+            n_file_total = self._count_files_recursive(d)
             folders.append({
                 "name": child_title or prettify(d.name),
                 "url": "/" + str(child_rel).replace("\\", "/") + "/",
                 "n_sub": n_sub,
-                "n_file": n_file,
+                "n_file_total": n_file_total,
             })
             self._build_dir(d, child_rel, is_root=False)
 
