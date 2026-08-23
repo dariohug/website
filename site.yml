@@ -20,10 +20,6 @@ nav:
         path: /theater/
       - title: Solar Racing
         path: /solar-racing/
-      - title: Openairs
-        path: /openairs/
-      - title: Events
-        path: /events/
       - title: Carbomap
         path: /carbomap/
   - title: Notes & documents
