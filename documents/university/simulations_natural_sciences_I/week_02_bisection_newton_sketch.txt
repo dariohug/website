@@ -1,0 +1,55 @@
+
+
+def func1(x):
+	return x**x - 100
+	
+def func2(x):
+	x**3 + x**2 ... 
+
+def bisection(f, a, b):
+
+      if f(c) > 0:
+	  
+	  
+	  
+x0 = bisection(func1, 0, 4)
+print(x0)
+
+x0 = bisection(func2, .., ..)
+
+
+Newton Method
+
+e = 0.5
+
+def fKepler(E, M, e):
+	return E - e*...
+	
+def fKeplerPrime(E, e):
+	return ...
+	
+def newton(f, fPrime, M, e, Estart):
+	E = Estart
+	tol = 0.001
+	dx = tol + 1
+	while abs(dx) > tol:
+		dx = -f(..)/fPrime(...)
+		Enew = E + dx
+		E = Enew
+	return E
+	
+def update(frame):
+	M = frame
+	E = newton(fKepler, fKeplerPrime, M, e, M)
+	x = a * cos(E) ...
+	y = ...
+	
+	xdata.append(x)
+    ydata.append(y)
+    ln.set_data(xdata, ydata)
+    return ln,
+
+ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 50),
+                    init_func=init, blit=True, interval=100)
+plt.show()
+

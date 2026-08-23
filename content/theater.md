@@ -1,25 +1,17 @@
 ---
 title: Theatre
 videos:
-  - title: "Placeholder — replace me"
-    url: "https://www.youtube.com/watch?v=XXXXXXXXXXX"
-    description: "Add a real performance by editing content/theater.md."
+  - title: "Roman und Julie (2022)"
+    url: "https://www.youtube.com/watch?v=KA-LN6ntbUQ&t=2014s"
+    description: >
+      A recording of the full performance by Theater Juhu. The play itself
+      starts a little way into the video.
 ---
 
-Theatre has been a big part of my life. This page collects recordings of
-performances I've been part of.
+Theatre has been part of my life for a long time, both on stage and behind it.
+*Roman und Julie* is a comedy I wrote and staged with **Theater Juhu** in 2022. 
+The full performance is recorded below, and the complete script is
+linked underneath it. It was a group effort and putting it in front of a live audience remains one of the
+things I am most proud of.
 
-*(Replace this text with your own story — how you got into theatre, the groups
-and productions you've worked with, roles you've played, and so on.)*
-
-## Performances
-
-Each video below is embedded from YouTube. To add one, open
-`content/theater.md` and add an entry under `videos:`:
-
-```yaml
-videos:
-  - title: "A Midsummer Night's Dream (2024)"
-    url: "https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
-    description: "Short note about the production."
-```
+[Read the script (PDF)](/theater/roman_und_julie_drehbuch.pdf)

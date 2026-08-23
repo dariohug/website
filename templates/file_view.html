@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block head_extra %}{% if needs_math %}{% include "_mathjax.html" %}{% endif %}{% endblock %}
 {% block content %}
 <article class="prose file-view">
   <nav class="breadcrumbs">
@@ -11,10 +12,6 @@
     {% if kind == 'pdf' %} · <a href="{{ raw_url }}" target="_blank" rel="noopener">Open in new tab</a>{% endif %}
   </p>
 
-  {% if kind == 'pdf' %}
-  <div class="pdf-embed"><embed src="{{ raw_url }}" type="application/pdf"></div>
-  {% elif kind == 'code' %}
-  {{ code_html|safe }}
-  {% endif %}
+  {% include "_file_body.html" %}
 </article>
 {% endblock %}

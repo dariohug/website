@@ -1,0 +1,13 @@
+{# How a document is shown in place: on its own viewer page and, when a folder
+   leads with it, on the folder page. Expects `kind` and `raw_url`. #}
+{% if kind == 'pdf' %}
+<div class="pdf-embed"><embed src="{{ raw_url }}" type="application/pdf"></div>
+{% elif kind == 'code' %}
+{{ code_html|safe }}
+{% elif kind == 'notebook' %}
+{{ notebook_html|safe }}
+{% elif kind == 'video' %}
+<video class="video-file" src="{{ raw_url }}" controls loop playsinline></video>
+{% elif kind == 'image' %}
+<p><img src="{{ raw_url }}" alt=""></p>
+{% endif %}

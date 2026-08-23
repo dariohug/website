@@ -18,6 +18,11 @@ Add content by committing files:
   * a performance -> a video entry in content/theater.md
 Then push; the GitHub Action rebuilds and deploys.
 
+PDFs, code files and Jupyter notebooks in documents/ get a viewer page of their
+own. A folder README.md can put one of its files at the top of the folder page
+with `featured: <filename>` (plus optional `featured_title` / `featured_note`)
+in its front matter — see documents/university/simulations_natural_sciences_I.
+
 The Google Maps key is read from the GOOGLE_MAPS_API_KEY environment variable
 at build time (set as a GitHub Actions secret); it is never stored in the repo.
 Without it the build still works — the Carbomap list view and filters function,
@@ -26,7 +31,9 @@ only the map itself is disabled.
 
 from __future__ import annotations
 
+import base64
 import datetime as dt
+import html
 import json
 import os
 import re
@@ -61,10 +68,15 @@ CODE_EXTS = {
     ".cc", ".java", ".rs", ".go", ".rb", ".php", ".sh", ".bash", ".zsh",
     ".sql", ".html", ".css", ".scss", ".json", ".yml", ".yaml", ".toml",
     ".ini", ".cfg", ".txt", ".md", ".tex", ".m", ".r", ".jl", ".kt", ".swift",
-    ".cs", ".pl", ".lua", ".vhd", ".vhdl", ".v", ".asm", ".csv", ".xml",
+    ".cs", ".pl", ".lua", ".vhd", ".vhdl", ".v", ".asm", ".csv", ".dat", ".xml",
 }
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".bmp"}
+VIDEO_EXTS = {".mp4", ".webm", ".ogv"}
 MAX_INLINE_BYTES = 512 * 1024  # don't try to syntax-highlight huge files
+
+# Jupyter output that is longer than this many lines is shown head-and-tail
+# only; a few notebooks print megabytes of arrays while debugging.
+MAX_OUTPUT_LINES = 40
 
 
 def load_config() -> dict:
@@ -140,6 +152,17 @@ def human_size(num: int) -> str:
     return f"{size:.1f} GB"
 
 
+def youtube_start(value) -> int:
+    """Seconds to start a YouTube embed at, from a `t=90s`/`t=90`/`start=90` URL."""
+    m = re.search(r"[?&](?:t|start)=(\d+)h?(\d+)?m?(\d+)?s?", str(value))
+    if not m:
+        return 0
+    if m.group(2) or m.group(3):  # h/m/s form, e.g. t=1h2m3s
+        h, mi, sec = (int(g or 0) for g in m.groups())
+        return h * 3600 + mi * 60 + sec
+    return int(m.group(1))
+
+
 def youtube_id(value) -> str:
     """Accept a full YouTube URL or a bare 11-char id; return the id."""
     value = str(value).strip()
@@ -147,6 +170,156 @@ def youtube_id(value) -> str:
         return value
     m = re.search(r"(?:v=|youtu\.be/|embed/|shorts/|/v/)([A-Za-z0-9_-]{11})", value)
     return m.group(1) if m else ""
+
+
+def folder_videos(meta: dict):
+    """`videos:` in a folder README — YouTube results that belong to a course."""
+    out = []
+    for v in meta.get("videos") or []:
+        vid = youtube_id(v.get("url") or v.get("id") or "")
+        if vid:
+            out.append({
+                "id": vid,
+                "title": v.get("title", ""),
+                "description": v.get("description", ""),
+                "start": v.get("start") or youtube_start(v.get("url") or ""),
+            })
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# Jupyter notebooks
+# --------------------------------------------------------------------------- #
+#
+# Notebooks are rendered here directly from their JSON rather than with
+# nbconvert, so the build keeps its four small dependencies: markdown cells go
+# through the same Markdown renderer as the rest of the site, code cells
+# through Pygments, and stored outputs (images, text, HTML tables) are inlined.
+# TeX between $...$ / $$...$$ is pulled out before the Markdown pass — Markdown
+# would otherwise eat the underscores — and put back for MathJax, which is
+# loaded from a CDN on notebook pages only. Plots are written out as real image
+# files next to the notebook instead of base64 blobs, so that a page showing a
+# notebook twice (the folder page and the notebook page) downloads them once.
+
+# $$...$$ or $...$; an inline formula may wrap over several lines (the cases
+# environments in these notebooks do) but never across a blank line.
+_MATH_RE = re.compile(r"\$\$(.+?)\$\$|\$((?:[^$\n]|\n(?!\s*\n))+?)\$", re.DOTALL)
+
+
+def _protect_math(text: str):
+    """Replace TeX spans with placeholders Markdown will not touch."""
+    spans = []
+
+    def stash(m):
+        display = m.group(1) is not None
+        body = html.escape((m.group(1) or m.group(2)).strip())
+        spans.append(f"\\[{body}\\]" if display else f"\\({body}\\)")
+        return f"mathspan{len(spans) - 1}xend"
+
+    return _MATH_RE.sub(stash, text), spans
+
+
+def render_markdown_with_math(text: str) -> str:
+    text, spans = _protect_math(text)
+    out = render_markdown(text)
+    for i, span in enumerate(spans):
+        out = out.replace(f"mathspan{i}xend", span)
+    return out
+
+
+def _clip(text: str) -> str:
+    """Shorten runaway cell output to a readable head and tail."""
+    lines = text.splitlines()
+    if len(lines) <= MAX_OUTPUT_LINES:
+        return text
+    head, tail = lines[:MAX_OUTPUT_LINES - 10], lines[-10:]
+    hidden = len(lines) - len(head) - len(tail)
+    return "\n".join(head + [f"... [{hidden} lines hidden] ...", ""] + tail)
+
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _output_html(out: dict, save_image) -> str:
+    """One stored cell output as HTML: image, HTML table or plain text."""
+    kind = out.get("output_type")
+    if kind == "stream":
+        text = _clip("".join(out.get("text", [])))
+        return f'<pre class="nb-stream">{html.escape(text)}</pre>'
+    if kind == "error":
+        text = _ANSI_RE.sub("", "\n".join(out.get("traceback", [])))
+        return f'<pre class="nb-error">{html.escape(_clip(text))}</pre>'
+
+    data = out.get("data") or {}
+    for mime in ("image/png", "image/jpeg", "image/gif"):
+        if mime in data:
+            url = save_image(mime, "".join(data[mime]))
+            return f'<img class="nb-image" src="{url}" alt="" loading="lazy">'
+    if "image/svg+xml" in data:
+        return f'<div class="nb-image">{"".join(data["image/svg+xml"])}</div>'
+    if "text/html" in data:
+        return f'<div class="nb-html">{"".join(data["text/html"])}</div>'
+    if "text/plain" in data:
+        text = _clip("".join(data["text/plain"]))
+        return f'<pre class="nb-text">{html.escape(text)}</pre>'
+    return ""
+
+
+def render_notebook(path: Path, out_dir: Path, url_prefix: str):
+    """Render a .ipynb to HTML (plots land in out_dir), or None if unreadable."""
+    try:
+        nb = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, OSError, json.JSONDecodeError):
+        return None
+    language = (
+        nb.get("metadata", {}).get("language_info", {}).get("name") or "python"
+    )
+    try:
+        from pygments.lexers import get_lexer_by_name
+        lexer = get_lexer_by_name(language)
+    except ClassNotFound:
+        lexer = TextLexer()
+
+    images = []
+
+    def save_image(mime: str, payload: str, stem: str = "output") -> str:
+        """Write one plot or attachment to disk and return its URL."""
+        ext = "." + {"jpeg": "jpg", "svg+xml": "svg"}.get(
+            mime.split("/")[-1], mime.split("/")[-1]
+        )
+        name = f"{stem}-{len(images) + 1:02d}{ext}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / name).write_bytes(base64.b64decode(payload))
+        images.append(name)
+        return f"{url_prefix}/{name}"
+
+    from pygments import highlight as pygments_highlight
+    parts = []
+    for cell in nb.get("cells", []):
+        source = "".join(cell.get("source", []))
+        if cell.get("cell_type") == "markdown":
+            for name, bundle in (cell.get("attachments") or {}).items():
+                for mime, payload in bundle.items():
+                    if mime.startswith("image/"):
+                        url = save_image(mime, "".join(payload), "attachment")
+                        source = source.replace(f"attachment:{name}", url)
+                        break
+            if source.strip():
+                parts.append(
+                    f'<div class="nb-md">{render_markdown_with_math(source)}</div>'
+                )
+        elif cell.get("cell_type") == "code":
+            if source.strip():
+                code = pygments_highlight(
+                    source, lexer, HtmlFormatter(cssclass="highlight")
+                )
+                parts.append(f'<div class="nb-in">{code}</div>')
+            outputs = "".join(
+                _output_html(o, save_image) for o in cell.get("outputs", [])
+            )
+            if outputs.strip():
+                parts.append(f'<div class="nb-out">{outputs}</div>')
+    return '<div class="notebook">' + "\n".join(parts) + "</div>"
 
 
 # --------------------------------------------------------------------------- #
@@ -235,6 +408,7 @@ class Builder:
                 "id": vid,
                 "title": v.get("title", ""),
                 "description": v.get("description", ""),
+                "start": v.get("start") or youtube_start(v.get("url") or ""),
             })
         self.render(
             "theater/index.html", "theater.html",
@@ -299,11 +473,12 @@ class Builder:
 
     # ----- documents ------------------------------------------------------ #
     def folder_meta(self, directory: Path):
+        """Front matter and rendered body of a folder's README.md, if any."""
         readme = directory / "README.md"
         if readme.exists():
             meta, body_html, _ = read_doc(readme)
-            return meta.get("title"), body_html
-        return None, ""
+            return meta, body_html
+        return {}, ""
 
     @staticmethod
     def _count_files_recursive(directory: Path) -> int:
@@ -329,13 +504,14 @@ class Builder:
         files = [p for p in entries
                  if p.is_file() and p.name not in IGNORE_NAMES and not p.name.startswith(".")]
 
-        title, desc_html = self.folder_meta(src_dir)
+        meta, desc_html = self.folder_meta(src_dir)
+        title = meta.get("title")
         page_title = "Notes & Documents" if is_root else (title or prettify(src_dir.name))
 
         folders = []
         for d in subdirs:
             child_rel = rel / d.name
-            child_title, _ = self.folder_meta(d)
+            child_title = self.folder_meta(d)[0].get("title")
             n_sub = sum(1 for p in d.iterdir() if p.is_dir() and not p.name.startswith("."))
             n_file_total = self._count_files_recursive(d)
             folders.append({
@@ -347,13 +523,51 @@ class Builder:
             self._build_dir(d, child_rel, is_root=False)
 
         file_entries = [self._build_file(f, rel) for f in files]
+        featured = self._featured(meta, file_entries)
 
         self.render(
             str(rel / "index.html").replace("\\", "/"), "docs_dir.html",
             page={"title": page_title}, description=desc_html,
             folders=folders, files=file_entries, is_root=is_root,
+            featured=featured, videos=folder_videos(meta),
+            hide_file_list=bool(featured and featured["only_file"]),
+            needs_math=bool(featured and featured["notebook_html"]),
             breadcrumbs=self._breadcrumbs(rel), current_path="/documents/",
         )
+
+    @staticmethod
+    def _featured(meta: dict, file_entries: list):
+        """The file a folder page opens with, shown in place rather than linked.
+
+        Either named by `featured:` in the folder README — with an optional
+        `featured_title` and `featured_note` (Markdown) to say what the reader
+        is looking at — or, when a folder holds a single file, that file: there
+        is nothing to choose from, so the page shows it straight away.
+        """
+        name = meta.get("featured")
+        if name:
+            entry = next((e for e in file_entries if e["name"] == name), None)
+            if entry is None:
+                print(f"  ! featured file not found: {name}")
+                return None
+            note = meta.get("featured_note") or ""
+            title = meta.get("featured_title") or prettify(Path(name).stem)
+        elif len(file_entries) == 1:
+            entry, note, title = file_entries[0], "", None
+        else:
+            return None
+
+        return {
+            "title": title,
+            "note": render_markdown(note) if note else "",
+            "name": entry["name"],
+            "url": entry["view_url"] or entry["download_url"],
+            "download_url": entry["download_url"],
+            "kind": entry["kind"],
+            "code_html": entry["code_html"],
+            "notebook_html": entry["notebook_html"],
+            "only_file": not name,
+        }
 
     def _build_file(self, src: Path, rel: Path):
         """Copy a document into _site and, where useful, make a viewer page."""
@@ -370,30 +584,44 @@ class Builder:
             "ext": ext.lstrip(".").upper() or "FILE",
             "download_url": raw_url,
             "view_url": None,
+            "kind": None,
+            "code_html": None,
+            "notebook_html": None,
         }
 
+        kind, code_html, notebook_html = None, None, None
         if ext == ".pdf":
+            kind = "pdf"
+        elif ext in IMAGE_EXTS:
+            entry["view_url"] = raw_url
+            entry["kind"] = "image"
+            return entry
+        elif ext in VIDEO_EXTS:
+            kind = "video"
+        elif ext == ".ipynb":
+            assets = src.stem + ".files"
+            notebook_html = render_notebook(
+                src, dest_dir / assets,
+                "/" + str(rel / assets).replace("\\", "/"),
+            )
+            kind = "notebook" if notebook_html else None
+        elif ext in CODE_EXTS and size <= MAX_INLINE_BYTES:
+            code_html = self._highlight(src)
+            kind = "code" if code_html else None
+
+        if kind:
             view_rel = rel / (src.name + ".html")
             self.render(
                 str(view_rel).replace("\\", "/"), "file_view.html",
-                page={"title": src.name}, kind="pdf", raw_url=raw_url,
-                filename=src.name, code_html=None,
+                page={"title": src.name}, kind=kind, raw_url=raw_url,
+                filename=src.name, code_html=code_html,
+                notebook_html=notebook_html, needs_math=(kind == "notebook"),
                 breadcrumbs=self._breadcrumbs(rel), current_path="/documents/",
             )
             entry["view_url"] = "/" + str(view_rel).replace("\\", "/")
-        elif ext in IMAGE_EXTS:
-            entry["view_url"] = raw_url
-        elif ext in CODE_EXTS and size <= MAX_INLINE_BYTES:
-            code_html = self._highlight(src)
-            if code_html is not None:
-                view_rel = rel / (src.name + ".html")
-                self.render(
-                    str(view_rel).replace("\\", "/"), "file_view.html",
-                    page={"title": src.name}, kind="code", raw_url=raw_url,
-                    filename=src.name, code_html=code_html,
-                    breadcrumbs=self._breadcrumbs(rel), current_path="/documents/",
-                )
-                entry["view_url"] = "/" + str(view_rel).replace("\\", "/")
+        entry["kind"] = kind
+        entry["code_html"] = code_html
+        entry["notebook_html"] = notebook_html
         return entry
 
     @staticmethod

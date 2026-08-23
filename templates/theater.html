@@ -8,7 +8,7 @@
     {% for v in videos %}
     <figure class="video">
       <div class="video-embed">
-        <iframe src="https://www.youtube-nocookie.com/embed/{{ v.id }}"
+        <iframe src="https://www.youtube-nocookie.com/embed/{{ v.id }}{% if v.start %}?start={{ v.start }}{% endif %}"
                 title="{{ v.title or 'Performance' }}" loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen></iframe>

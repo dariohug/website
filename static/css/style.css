@@ -195,3 +195,43 @@ table.file-list td:nth-child(3) { color: var(--muted); font-size: 0.9rem; white-
   .nav-group > ul a { padding: 0.3rem 0 0.3rem 1rem; }
   .nav-group > ul a:hover { background: none; }
 }
+
+/* Featured file: the one piece of work a course folder leads with. */
+.featured { margin: 1.5rem 0 0; }
+.featured h2 { margin-top: 0; }
+.featured-source { color: var(--muted); font-size: 0.9rem; }
+
+/* Notebooks (rendered by build.py, not nbconvert) */
+.video-file { width: 100%; margin-top: 1rem; background: #000; }
+
+.notebook { margin-top: 1.5rem; }
+.notebook .nb-md > :first-child { margin-top: 0; }
+.notebook .nb-md h1 { font-size: 1.35rem; margin: 2rem 0 0.5rem; }
+.notebook .nb-md h2 { font-size: 1.15rem; }
+.notebook .nb-md h3 { font-size: 1rem; }
+.notebook .nb-in { margin: 1rem 0; }
+.notebook .nb-in .highlight { border-left: 3px solid var(--rule); }
+.notebook .nb-out { margin: 1rem 0 1.5rem; }
+.notebook .nb-out pre {
+  background: none;
+  border-left: 3px solid var(--rule);
+  border-radius: 0;
+  color: var(--muted);
+  padding: 0.3rem 1rem;
+  white-space: pre-wrap;
+}
+.notebook .nb-error pre, .notebook .nb-error { color: #a12; }
+.notebook .nb-image, .notebook .nb-image img { display: block; width: 100%; height: auto; }
+.notebook .nb-html { overflow-x: auto; }
+.notebook .nb-html table { border-collapse: collapse; font-size: 0.85em; }
+.notebook .nb-html th, .notebook .nb-html td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.25rem 0.5rem;
+  text-align: right;
+}
+
+/* Plots are the point of these notebooks, so on wide screens let the output
+   spill out of the text column instead of shrinking to fit it. */
+@media (min-width: 78rem) {
+  .notebook .nb-out { width: 62rem; margin-left: calc((46rem - 62rem) / 2); }
+}
