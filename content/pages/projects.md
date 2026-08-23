@@ -12,6 +12,3 @@ Things I spend my time on, on and off stage.
   <li><a href="/carbomap/">Carbomap</a>
     <p>A map of every carbonara I've eaten, rated out of five.</p></li>
 </ul>
-
-*(Edit `content/pages/projects.md` to change this list, and `site.yml` to change
-the menu.)*
