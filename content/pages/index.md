@@ -2,13 +2,10 @@
 title: Home
 ---
 
-Hi, I'm **Dario Hug**.
+Hi, I'm **Dario Hug**, I really like to build solar cars, organize events and eat pasta carbonara. 
+This is my personal corner of the web. Here you'll find:
 
-This is my personal corner of the web — intentionally plain: text first, quick
-to load, easy to maintain. Here you'll find:
-
-- **[Projects](/projects/)** — [theatre](/theater/),
-  [solar racing](/solar-racing/) and [Carbomap](/carbomap/).
-- **[Notes & documents](/documents/)** — documents, scripts and notes from my
+- **[Projects](/projects/)**: Cool things i have built at aCentauri solar racing, during university or just for fun.
+- **[Notes & documents](/documents/)**: scripts and notes from my
   Berufsmaturität, Passerelle and university time.
-- **[Contact](/contact/)** — how to reach me.
+- **[Contact](/contact/)**: how to reach me.

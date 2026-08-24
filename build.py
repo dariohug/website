@@ -390,6 +390,7 @@ class Builder:
                 self.render(
                     f"{md_file.stem}/index.html", "page.html",
                     page={"title": title}, content=body_html,
+                    needs_math=("\\(" in body_html or "\\[" in body_html),
                     current_path=f"/{md_file.stem}/",
                 )
 

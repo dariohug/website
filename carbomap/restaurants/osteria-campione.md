@@ -11,5 +11,5 @@ guanciale: true
 cream: false
 date: 2025-09-14
 ---
-Example entry — delete me. The best one so far: textbook carbonara, nothing to
-fault. No photo on this one to show how the card looks without an image.
+Example entry, delete me. The best one so far. Textbook carbonara, nothing to
+fault. No photo on this one, to show how the card looks without an image.

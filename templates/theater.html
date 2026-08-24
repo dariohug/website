@@ -14,7 +14,7 @@
                 allowfullscreen></iframe>
       </div>
       {% if v.title or v.description %}
-      <figcaption>{% if v.title %}<strong>{{ v.title }}</strong>{% endif %}{% if v.description %} — {{ v.description }}{% endif %}</figcaption>
+      <figcaption>{% if v.title %}<strong>{{ v.title }}</strong>{% endif %}{% if v.description %}: {{ v.description }}{% endif %}</figcaption>
       {% endif %}
     </figure>
     {% endfor %}

@@ -21,7 +21,7 @@
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
       </div>
       {% if v.title or v.description %}
-      <figcaption>{% if v.title %}<strong>{{ v.title }}</strong>{% if v.description %} — {% endif %}{% endif %}{{ v.description }}</figcaption>
+      <figcaption>{% if v.title %}<strong>{{ v.title }}</strong>{% if v.description %}: {% endif %}{% endif %}{{ v.description }}</figcaption>
       {% endif %}
     </figure>
     {% endfor %}

@@ -1,6 +1,6 @@
 # Site-wide settings. Edit these freely.
 title: Dario Hug
-tagline: Personal site — projects, notes & documents
+tagline: Personal site with projects, notes and documents
 author: Dario Hug
 # Contact is a LinkedIn link (no public email, to keep the inbox spam-free).
 linkedin: https://www.linkedin.com/in/dario-hug-744179234/
@@ -16,6 +16,10 @@ nav:
     children:
       - title: All projects
         path: /projects/
+      - title: Bachelor Thesis
+        path: /bachelor-thesis/
+      - title: Electron-Detector Competition
+        path: /electron-detector/
       - title: Theatre
         path: /theater/
       - title: Solar Racing

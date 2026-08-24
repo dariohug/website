@@ -1,7 +1,7 @@
 ---
 title: Simulations in the Natural Sciences I
 featured: week_08_electron_optics_detector_design.ipynb
-featured_title: "Week 08 — Electron optics: designing a detector"
+featured_title: "Week 08: electron optics, designing a detector"
 featured_note: |
   The week 08 exercise was run as a class competition: everyone designed the
   electrode layout of an electron detector, and the designs were compared on
@@ -14,10 +14,10 @@ featured_note: |
   with an electrode right in front of the detector, one more realistic variant
   that trades some efficiency for a detector that is less exposed to the
   field, and one that accelerates the electrons into the detector. The bicubic
-  interpolation at the end never worked properly — that part is left as it was.
+  interpolation at the end never worked properly. That part is left as it was.
 ---
 
 Coursework for *Simulations in the Natural Sciences I* (ESC201, autumn 2024):
-lecture notes, a summary, and one Python exercise per week — from root finding
-and Kepler orbits to PDE solvers and 1-D hydrodynamics. The notebooks are
-rendered in full, including their plots.
+lecture notes, a summary, and one Python exercise per week. They run from root
+finding and Kepler orbits to PDE solvers and 1-D hydrodynamics. The notebooks
+are rendered in full, including their plots.

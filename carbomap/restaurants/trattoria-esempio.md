@@ -12,6 +12,6 @@ cream: false
 image: esempio.svg
 date: 2025-09-12
 ---
-Example entry — delete me. Silky, peppery, proper *guanciale*, no cream in
+Example entry, delete me. Silky, peppery, proper *guanciale*, no cream in
 sight. The egg was just set, the pecorino sharp. This is roughly what a real
 entry looks like.

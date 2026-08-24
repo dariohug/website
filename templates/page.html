@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block head_extra %}{% if needs_math %}{% include "_mathjax.html" %}{% endif %}{% endblock %}
 {% block content %}
 <article class="prose">
   <h1>{{ page.title }}</h1>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{% if page and page.title %}{{ page.title }} — {% endif %}{{ site.title }}{% endblock %}</title>
+  <title>{% block title %}{% if page and page.title %}{{ page.title }} · {% endif %}{{ site.title }}{% endblock %}</title>
   {% if site.tagline %}<meta name="description" content="{{ site.tagline }}">{% endif %}
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/pygments.css">
@@ -41,7 +41,7 @@
 
   <script>
     /* Nav dropdowns are plain <details>: they already open on click and on
-       Enter/Space. This only adds the two conveniences <details> lacks —
+       Enter/Space. This only adds the two conveniences <details> lacks:
        closing on Escape and on a click elsewhere on the page. */
     (function () {
       var groups = document.querySelectorAll(".nav-group");

@@ -11,6 +11,6 @@ guanciale: false
 cream: true
 date: 2025-10-02
 ---
-Example entry — delete me. Used pancetta *and* a splash of cream. Pricey for
-what it was. Kept here so the "no guanciale" / "has cream" filters have
+Example entry, delete me. Used pancetta *and* a splash of cream. Pricey for
+what it was. Kept here so the "no guanciale" and "has cream" filters have
 something to catch.
