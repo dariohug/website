@@ -1,15 +1,15 @@
 ---
-name: "Osteria Campione (example)"
-lat: 41.8986
-lng: 12.4768
-city: Rome
+name: "Trattoria Ca' Foscari al Canton"
+lat: 45.4355179
+lng: 12.3261143
+city: Venedig
 country: Italy
-rating: 5
-price: 18
+rating: 4.3
+price: 13
 currency: "€"
 guanciale: true
-cream: false
-date: 2025-09-14
+cream: true
+date: 2026-07-06
+image: carbomap/images/WhatsApp Image 2026-08-27 at 9.41.43 PM.jpeg
 ---
-Example entry, delete me. The best one so far. Textbook carbonara, nothing to
-fault. No photo on this one, to show how the card looks without an image.
+Tasty carbo, really good price for venice but they do the "bring water without you asking and putting it on the bill" move. 
