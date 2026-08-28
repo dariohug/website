@@ -16,6 +16,8 @@ nav:
     children:
       - title: All projects
         path: /projects/
+      - title: Neural Networks
+        path: /neural-networks/
       - title: Bachelor Thesis
         path: /bachelor-thesis/
       - title: Electron-Detector Competition
