@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Eine Einladung 💕</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💖</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink:      #ff7aa8;
+    --pink-deep: #e84c85;
+    --cream:     #fff5f7;
+    --card:      #ffffff;
+    --ink:       #5b3a45;
+    --muted:     #96707d;
+    --lilac:     #c9a7f5;
+    --mint:      #9fe3d0;
+    --shadow:    0 10px 30px rgba(232, 76, 133, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { overflow-x: hidden; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 2.5rem 1rem 4rem;
+    font-family: "Quicksand", "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 500px at 10% -5%,  #ffe3ee 0%, transparent 60%),
+      radial-gradient(900px 500px at 95% 10%,   #eee1ff 0%, transparent 55%),
+      radial-gradient(800px 600px at 50% 105%,  #dff7f0 0%, transparent 60%),
+      var(--cream);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Floating hearts in the background, purely decorative. */
+  .bg-hearts { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .bg-hearts span {
+    position: absolute;
+    bottom: -10vh;
+    font-size: 1.4rem;
+    opacity: 0.35;
+    animation: float-up linear infinite;
+  }
+  @keyframes float-up {
+    from { transform: translateY(0) rotate(0deg); }
+    to   { transform: translateY(-120vh) rotate(360deg); }
+  }
+
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 34rem; }
+
+  .card {
+    background: var(--card);
+    border: 3px solid #ffd6e4;
+    border-radius: 28px;
+    padding: 2rem 1.6rem;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pink-deep);
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+
+  h1 {
+    font-family: "Baloo 2", "Quicksand", cursive;
+    font-weight: 800;
+    font-size: clamp(1.9rem, 8vw, 2.7rem);
+    line-height: 1.15;
+    margin: 0 0 0.6rem;
+    color: var(--pink-deep);
+  }
+
+  .lead { font-size: 1.05rem; line-height: 1.6; margin: 0 0 0.4rem; }
+  .muted { color: var(--muted); font-size: 0.95rem; }
+
+  .when {
+    display: inline-block;
+    margin: 1.1rem 0 0.2rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #fff0f6, #f3e9ff);
+    border: 2px dashed #ffc2d8;
+    font-family: "Baloo 2", cursive;
+    font-weight: 600;
+    font-size: 1.15rem;
+  }
+
+  #countdown { display: block; margin-top: 0.9rem; font-size: 0.9rem; color: var(--muted); }
+
+  /* ---- buttons ---- */
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.8rem;
+    min-height: 4rem;
+  }
+
+  button {
+    font-family: "Baloo 2", "Quicksand", cursive;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    border-radius: 999px;
+    padding: 0.85rem 1.9rem;
+    font-size: 1.15rem;
+  }
+
+  #yes {
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(232, 76, 133, 0.35);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  #yes:hover, #yes:focus-visible { transform: scale(1.06) rotate(-1.5deg); }
+  #yes:active { transform: scale(0.97); }
+
+  #no {
+    background: #f4eef1;
+    color: var(--muted);
+    transition: transform 0.18s ease-out, opacity 0.3s ease, font-size 0.3s ease;
+    will-change: transform;
+  }
+  /* Once it starts running it leaves the layout flow entirely. */
+  #no.loose {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    margin: 0;
+  }
+
+  /* ---- the reveal ---- */
+  #details { display: none; margin-top: 1.3rem; }
+  #details.show { display: block; animation: pop 0.5s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes pop {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  #details h2 {
+    font-family: "Baloo 2", cursive;
+    font-size: 1.4rem;
+    color: var(--pink-deep);
+    margin: 0 0 1rem;
+  }
+
+  ul.info { list-style: none; padding: 0; margin: 0; text-align: left; }
+  ul.info li {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.6rem;
+    background: linear-gradient(135deg, #fff7fa, #faf4ff);
+    border: 2px solid #ffe1ec;
+    border-radius: 18px;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  ul.info .ico { font-size: 1.35rem; line-height: 1.2; flex: none; }
+  ul.info b { color: var(--pink-deep); }
+
+  .ps { margin: 1.2rem 0 0; font-size: 0.9rem; color: var(--muted); }
+  .sign { font-family: "Baloo 2", cursive; font-size: 1.05rem; margin-top: 0.4rem; }
+
+  /* confetti */
+  .confetti {
+    position: fixed;
+    top: -3rem;
+    font-size: 1.6rem;
+    z-index: 20;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(115vh) rotate(540deg); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bg-hearts span, .confetti { animation: none; }
+    #no { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-hearts" aria-hidden="true"></div>
+
+<div class="wrap">
+  <div class="card">
+    <p class="eyebrow">Streng geheime Einladung</p>
+    <h1>Hast du morgen<br>schon was vor? 🥰</h1>
+
+    <p class="lead">
+      Weil, ähm… falls nicht: ich hätte da etwas geplant.
+      Nur für dich und mich. Sehr fein, sehr schön, sehr wir.
+    </p>
+    <p class="lead muted">
+      (Das Programm bleibt eine Überraschung. Ich verrate nur das Nötigste.)
+    </p>
+
+    <span class="when">📅 Morgen, 26.09. &nbsp;·&nbsp; 17:30 Uhr</span>
+    <span id="countdown"></span>
+
+    <div class="buttons">
+      <button id="yes" type="button">Ja, unbedingt! 💖</button>
+      <button id="no" type="button">Nein</button>
+    </div>
+
+    <div id="details">
+      <h2>Wusste ich doch. 🎉 Also gut:</h2>
+      <ul class="info">
+        <li><span class="ico">🚆</span><span>Ich hole dich <b>um 17:30 Uhr bei dir zuhause</b> ab. Pünktlich. Ehrenwort.</span></li>
+        <li><span class="ico">🍝</span><span>Komm <b>hungrig</b>. Sehr hungrig. Es gibt Essen um circa <b>19:30</b>.</span></li>
+        <li><span class="ico">👟</span><span><b>Bequeme Schuhe</b> anziehen – wir werden ein bisschen laufen.</span></li>
+        <li><span class="ico">🌦️</span><span><b>Zieh dich dem Wetter entsprechend an.</b></span></li>
+      </ul>
+      <p class="ps">P.S. Der «Nein»-Knopf hat nie funktioniert. Das war von Anfang an so geplant. 😌</p>
+      <p class="sign">Bis morgen! 💕</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ---------------------------------------------------------------- *
+   * Background hearts
+   * ---------------------------------------------------------------- */
+  var bg = document.querySelector(".bg-hearts");
+  var glyphs = ["💗", "💕", "💖", "🩷", "✨", "💓"];
+  for (var i = 0; i < 14; i++) {
+    var s = document.createElement("span");
+    s.textContent = glyphs[i % glyphs.length];
+    s.style.left = (Math.random() * 96) + "vw";
+    s.style.fontSize = (0.9 + Math.random() * 1.6) + "rem";
+    s.style.animationDuration = (11 + Math.random() * 14) + "s";
+    s.style.animationDelay = (-Math.random() * 20) + "s";
+    bg.appendChild(s);
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Countdown to the 26th at 17:30. If that moment has already
+   * passed we just say "today" instead of counting backwards.
+   * ---------------------------------------------------------------- */
+  var cd = document.getElementById("countdown");
+  var target = new Date();
+  target.setMonth(8, 26);            // September = month 8
+  target.setHours(17, 30, 0, 0);
+
+  function tick() {
+    var diff = target - new Date();
+    if (diff <= 0) { cd.textContent = "Es ist soweit! 💖"; return; }
+    var m = Math.floor(diff / 60000);
+    var h = Math.floor(m / 60);
+    cd.textContent = "noch " + h + " Stunden und " + (m % 60) + " Minuten ⏳";
+  }
+  tick();
+  setInterval(tick, 20000);
+
+  /* ---------------------------------------------------------------- *
+   * The "Nein" button, which is shy and will not be caught.
+   * ---------------------------------------------------------------- */
+  var no  = document.getElementById("no");
+  var yes = document.getElementById("yes");
+
+  var excuses = [
+    "Nein", "Nein?", "nein…", "ähm, nein?", "fast!", "knapp daneben",
+    "nope 🙈", "versuch's weiter", "hihi", "niemals", "wirklich?",
+    "ok… ok… nein!", "du bist hartnäckig", "ich flüchte 🏃", "gib auf 💘"
+  ];
+  var dodges = 0;
+  var loose = false;
+  var lastPointer = null;          // where the cursor or finger last was
+
+  function dodge() {
+    dodges++;
+
+    // First escape: leave the layout so the row does not reflow.
+    if (!loose) {
+      var r = no.getBoundingClientRect();
+      no.style.width = r.width + "px";
+      no.style.height = r.height + "px";
+      no.classList.add("loose");
+      place(r.left, r.top);
+      loose = true;
+    }
+
+    var box = no.getBoundingClientRect();
+    var pad = 8;
+    var maxX = Math.max(pad, window.innerWidth  - box.width  - pad);
+    var maxY = Math.max(pad, window.innerHeight - box.height - pad);
+
+    // The "Ja" button is sacred ground: never land on top of it, or she
+    // would have to fight the joke to accept.
+    var safe = yes.getBoundingClientRect();
+
+    function bad(x, y) {
+      // Still within reach of the cursor?
+      if (lastPointer) {
+        var cx = x + box.width / 2, cy = y + box.height / 2;
+        if (Math.hypot(lastPointer.x - cx, lastPointer.y - cy) < 170) return true;
+      }
+      // Overlapping the "Ja" button (with a little breathing room)?
+      return !(x + box.width < safe.left - 12 || x > safe.right + 12 ||
+               y + box.height < safe.top - 12 || y > safe.bottom + 12);
+    }
+
+    var x, y, tries = 0;
+    do {
+      x = pad + Math.random() * (maxX - pad);
+      y = pad + Math.random() * (maxY - pad);
+      tries++;
+    } while (tries < 40 && bad(x, y));
+
+    // On a very small screen random guessing can run out of room. Fall back to
+    // scanning a grid and taking whichever free spot is furthest from the
+    // finger, so it never gives up and parks itself on top of "Ja".
+    if (bad(x, y)) {
+      var best = -1;
+      for (var gx = 0; gx <= 4; gx++) {
+        for (var gy = 0; gy <= 4; gy++) {
+          var px = pad + (maxX - pad) * gx / 4;
+          var py = pad + (maxY - pad) * gy / 4;
+          var overlapsYes = !(px + box.width < safe.left - 12 || px > safe.right + 12 ||
+                              py + box.height < safe.top - 12 || py > safe.bottom + 12);
+          if (overlapsYes) continue;
+          var d = lastPointer
+            ? Math.hypot(lastPointer.x - (px + box.width / 2), lastPointer.y - (py + box.height / 2))
+            : 1;
+          if (d > best) { best = d; x = px; y = py; }
+        }
+      }
+    }
+
+    place(x, y);
+
+    no.textContent = excuses[Math.min(dodges, excuses.length - 1)];
+    no.style.transform += " rotate(" + (Math.random() * 30 - 15) + "deg)";
+
+    // It shrinks and fades as it gets tired; "Ja" grows in its place.
+    var shrink = Math.max(0.55, 1 - dodges * 0.045);
+    no.style.fontSize = (1.15 * shrink) + "rem";
+    no.style.opacity = Math.max(0.45, 1 - dodges * 0.035);
+    yes.style.transform = "scale(" + Math.min(1.35, 1 + dodges * 0.025) + ")";
+  }
+
+  function place(x, y) {
+    no.style.transform = "translate(" + x + "px, " + y + "px)";
+  }
+
+  // Mouse: flee as soon as the cursor gets anywhere close.
+  document.addEventListener("pointermove", function (e) {
+    lastPointer = { x: e.clientX, y: e.clientY };
+    if (e.pointerType === "touch") return;      // touch is handled below
+    var b = no.getBoundingClientRect();
+    var cx = b.left + b.width / 2;
+    var cy = b.top + b.height / 2;
+    if (Math.hypot(e.clientX - cx, e.clientY - cy) < 110) dodge();
+  }, { passive: true });
+
+  // Touch / stylus: teleport away on the press, before it can count as a tap.
+  no.addEventListener("pointerdown", function (e) {
+    lastPointer = { x: e.clientX, y: e.clientY };
+    e.preventDefault();
+    dodge();
+  });
+  no.addEventListener("touchstart", function (e) {
+    var t = e.touches[0];
+    if (t) lastPointer = { x: t.clientX, y: t.clientY };
+    e.preventDefault();
+    dodge();
+  }, { passive: false });
+
+  // And if it somehow still gets clicked (keyboard, assistive tech), it dodges too.
+  no.addEventListener("click", function (e) { e.preventDefault(); dodge(); });
+  no.addEventListener("focus", dodge);
+
+  // Keep it on screen if the window is resized or the phone is rotated.
+  window.addEventListener("resize", function () {
+    if (!loose) return;
+    var b = no.getBoundingClientRect();
+    place(
+      Math.min(Math.max(8, b.left), Math.max(8, window.innerWidth  - b.width  - 8)),
+      Math.min(Math.max(8, b.top),  Math.max(8, window.innerHeight - b.height - 8))
+    );
+  });
+
+  /* ---------------------------------------------------------------- *
+   * Yes. The only working button on this page.
+   * ---------------------------------------------------------------- */
+  yes.addEventListener("click", function () {
+    document.getElementById("details").classList.add("show");
+    no.remove();
+    yes.textContent = "Ja! 💖";
+    yes.disabled = true;
+    yes.style.cursor = "default";
+
+    var pieces = ["💖", "💕", "🎉", "✨", "🩷", "💗", "🥰"];
+    for (var i = 0; i < 40; i++) {
+      var c = document.createElement("div");
+      c.className = "confetti";
+      c.textContent = pieces[i % pieces.length];
+      c.style.left = (Math.random() * 96) + "vw";
+      c.style.animationDuration = (2.4 + Math.random() * 2.4) + "s";
+      c.style.animationDelay = (Math.random() * 0.9) + "s";
+      document.body.appendChild(c);
+      setTimeout(function (el) { return function () { el.remove(); }; }(c), 6500);
+    }
+
+    document.getElementById("details").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+})();
+</script>
+</body>
+</html>

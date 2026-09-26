@@ -1,6 +1,6 @@
-# Allow search engines by default.
+# Allow search engines by default, except the link-only pages.
 User-agent: *
-Disallow:
+Disallow: /dates/
 
 # Block common AI-training/scraper bots.
 User-agent: GPTBot
