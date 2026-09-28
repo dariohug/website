@@ -523,6 +523,12 @@ $("agent").onchange = syncHints;
 $("mode").onchange = syncHints;
 syncHints();
 
+/* If a licensed image deck has been dropped in, use it; otherwise the drawn
+   faces stay. Probed once, before the first round is dealt. */
+JassCards.detectDeck().then((found) => {
+  if (found) log("Kartenbilder geladen.", "sys");
+});
+
 $("start").onclick = async () => {
   showError("");
   G.spec = $("agent").value;

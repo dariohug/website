@@ -23,6 +23,41 @@ const SUIT_INFO = [
 
 const GOLD = "#d9b23c", GOLD_DARK = "#8a6a14";
 
+/* ------------------------------------------------------------------ *
+ * Optional image deck
+ *
+ * The faces below are drawn here because the good Swiss card artwork on the
+ * web is somebody's copyrighted work: the Deutschschweizer vectors on
+ * jasswiki.ch / schweizerjass.ch are by the graphic designer Jens Riedweg and
+ * carry no licence, so they cannot simply be copied onto a public site.
+ *
+ * If you get his permission, no code needs changing. Drop the 36 files into
+ *
+ *     static/stammtisch/play/deck/<suit>-<rank>.webp
+ *
+ * named the way jasswiki.ch names them — eichel-ass, rosen-koenig,
+ * schilten-under, schellen-banner, schellen-9 ... — and the deck is picked up
+ * automatically on load, with the drawn faces kept as the fallback. Credit the
+ * artist in the page footer while you are at it.
+ * ------------------------------------------------------------------ */
+const DECK_DIR = "deck";
+const SUIT_SLUG = ["eichel", "rosen", "schilten", "schellen"];
+const RANK_SLUG = ["ass", "koenig", "ober", "under", "banner", "9", "8", "7", "6"];
+let imageDeck = false;
+
+const deckSrc = (card) =>
+  `${DECK_DIR}/${SUIT_SLUG[Math.floor(card / 9)]}-${RANK_SLUG[card % 9]}.webp`;
+
+/* One probe decides it: if the Eichel As is there, the deck is there. */
+function detectDeck() {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => { imageDeck = true; resolve(true); };
+    img.onerror = () => { imageDeck = false; resolve(false); };
+    img.src = deckSrc(0);
+  });
+}
+
 const RANK_LABEL = ["A", "K", "O", "U", "B", "9", "8", "7", "6"];
 const RANK_NAME  = ["As", "König", "Ober", "Under", "Banner", "9", "8", "7", "6"];
 
@@ -120,6 +155,23 @@ function cardFace(card) {
   const s = SUIT_INFO[suit];
   const el = document.createElement("div");
   el.className = `card suit-${suit}`;
+  if (imageDeck) {
+    el.classList.add("photo");
+    const img = document.createElement("img");
+    img.src = deckSrc(card);
+    img.alt = cardTitle(card);
+    img.draggable = false;
+    // If one file is missing, fall back to the drawn face for that card alone.
+    img.onerror = () => {
+      el.classList.remove("photo");
+      el.innerHTML = `<span class="idx tl">${RANK_LABEL[rank]}</span>` +
+                     `<div class="face">${faceCentre(suit, rank)}</div>`;
+    };
+    el.appendChild(img);
+    el.title = cardTitle(card);
+    el.style.setProperty("--tint", s.tint);
+    return el;
+  }
   el.style.setProperty("--ink", s.ink);
   el.style.setProperty("--accent", s.accent);
   el.style.setProperty("--tint", s.tint);
@@ -141,4 +193,8 @@ function cardBack() {
   return el;
 }
 
-window.JassCards = { cardFace, cardTitle, cardBack, SUIT_INFO, RANK_LABEL, RANK_NAME };
+window.JassCards = {
+  cardFace, cardTitle, cardBack, detectDeck, deckSrc,
+  usingImages: () => imageDeck,
+  SUIT_INFO, RANK_LABEL, RANK_NAME,
+};
