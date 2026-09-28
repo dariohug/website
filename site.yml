@@ -16,6 +16,8 @@ nav:
     children:
       - title: All projects
         path: /projects/
+      - title: Stammtisch (Jass AI)
+        path: /stammtisch/
       - title: Neural Networks
         path: /neural-networks/
       - title: Bachelor Thesis
