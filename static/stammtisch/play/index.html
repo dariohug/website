@@ -81,7 +81,7 @@
     position: relative;
     background: radial-gradient(circle at 50% 45%, var(--felt) 0%, var(--felt-dark) 100%);
     border-radius: 14px; padding: 1rem;
-    min-height: 23rem;
+    min-height: 27rem;
     display: grid;
     grid-template-columns: 1fr minmax(0, 1.6fr) 1fr;
     grid-template-rows: auto 1fr auto;
@@ -98,6 +98,14 @@
   .seat .meta { opacity: 0.75; font-size: 0.78rem; }
   .seat.turn .who { color: #ffe08a; }
   .seat.turn .who::after { content: " ●"; }
+  /* Who leads the trick now being played — quiet, and never doubled up with
+     the turn dot. */
+  .seat.leads:not(.turn) .who::before { content: "▸ "; color: #ffe08a; opacity: .8; }
+  .seat .won {
+    font-size: 0.72rem; color: #ffe08a; opacity: 0;
+    transition: opacity .45s ease; min-height: 1em;
+  }
+  .seat.just-won .won { opacity: .95; }
 
   .seat-top { grid-column: 2; grid-row: 1; }
   .seat-left { grid-column: 1; grid-row: 2; align-self: center; }
@@ -108,7 +116,7 @@
   .trick-note { font-size: 0.8rem; opacity: 0.8; margin-top: 0.4rem; text-align: center; min-height: 1.2rem; }
 
   .backs { display: flex; gap: 2px; justify-content: center; margin-top: 0.25rem; }
-  .back {
+  .mini-back {
     width: 12px; height: 18px; border-radius: 2px;
     background: repeating-linear-gradient(45deg, #2b6cb0 0 3px, #1e4e7f 3px 6px);
     border: 1px solid rgba(255,255,255,0.35);
@@ -116,30 +124,109 @@
 
   /* ---------- cards ---------- */
   .card {
-    width: 3.1rem; height: 4.4rem; border-radius: 6px;
-    background: var(--card-bg); border: 1px solid #c9c3b4;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-weight: 700; line-height: 1.1; color: var(--black);
-    padding: 0; font-family: inherit; font-size: 1rem;
-    flex: none;
+    position: relative;
+    width: 3.6rem; height: 5.2rem; border-radius: 7px;
+    background: var(--tint, #f7f2e6);
+    border: 1px solid #cdc4b0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.28);
+    flex: none; overflow: hidden;
+    font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+    color: var(--ink, #333);
   }
-  .card .rank { font-size: 1.05rem; }
-  .card .suit { font-size: 1.15rem; }
-  .card.red { color: var(--red); }
-  .card.small { width: 2.5rem; height: 3.5rem; }
-  .card.small .rank { font-size: 0.85rem; }
-  .card.small .suit { font-size: 0.95rem; }
+  .card .idx {
+    position: absolute; font-weight: 700; font-size: 0.82rem; line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .card .idx.tl { top: 3px; left: 5px; }
+  .card .face { position: absolute; inset: 15% 12%; }
+  .card .face .pip {
+    position: absolute; transform: translate(-50%, -50%); aspect-ratio: 1;
+  }
+  .card .banner { position: absolute; inset: 0; }
+  .card .banner .flag { position: absolute; left: 4%; top: 22%; width: 92%; height: 56%; }
+  .card .figure { position: absolute; inset: 0; }
+  .card .figure .crown { position: absolute; left: 8%; top: 4%; width: 84%; }
 
-  .hand { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: center; margin-top: 0.8rem; }
-  .hand .card { cursor: default; transition: transform 0.12s ease, box-shadow 0.12s ease; }
-  .hand .card.playable { cursor: pointer; border-color: #7a8a55; }
-  .hand .card.playable:hover { transform: translateY(-7px); box-shadow: 0 6px 12px rgba(0,0,0,0.25); }
-  .hand .card.dim { opacity: 0.4; }
-  .hand .card.best { box-shadow: 0 0 0 2px var(--good); }
+  .card.back { background: #1c3f6e; border-color: #12294a; }
+  .card.back .back-art {
+    position: absolute; inset: 4px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.35);
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.13) 0 4px, transparent 4px 8px),
+      repeating-linear-gradient(-45deg, rgba(255,255,255,.13) 0 4px, transparent 4px 8px);
+  }
+
+  .card.small { width: 2.6rem; height: 3.75rem; }
+  .card.small .idx { font-size: 0.64rem; }
+
+  .hand { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin-top: 0.8rem; }
+  .hand .card { transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.2s ease; }
+  .hand .card.playable { cursor: pointer; }
+  .hand .card.playable::after {
+    content: ""; position: absolute; inset: 0; border-radius: 6px;
+    box-shadow: inset 0 0 0 2px rgba(31,110,60,0.75);
+  }
+  .hand .card.playable:hover { transform: translateY(-9px); box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
+  .hand .card.dim { opacity: 0.38; }
+  .hand .card.best::after {
+    content: ""; position: absolute; inset: 0; border-radius: 6px;
+    box-shadow: inset 0 0 0 2px var(--good), 0 0 10px rgba(26,127,55,0.6);
+  }
 
   .hand-label { text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 0.9rem; }
+  .took {
+    text-align: center; font-size: 0.8rem; margin-top: 0.5rem; min-height: 1.2rem;
+    color: var(--warn); font-weight: 600; opacity: 0;
+    transition: opacity .45s ease;
+  }
+  .took.on { opacity: 1; }
 
+  /* ---------- the trick, laid out by seat ---------- */
+  .trick {
+    grid-column: 2; grid-row: 2;
+    display: grid; place-items: center;
+    min-height: 0;
+  }
+  .trick-area {
+    position: relative;
+    width: 16.5rem; height: 14rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    place-items: center;
+  }
+  /* Each card lies in front of the seat that played it. */
+  .slot { position: relative; transition: opacity .45s ease, transform .45s ease; }
+  .slot[data-seat="0"] { grid-area: 3 / 2; transform: rotate(2deg);  }
+  .slot[data-seat="1"] { grid-area: 2 / 1; transform: rotate(-8deg); }
+  .slot[data-seat="2"] { grid-area: 1 / 2; transform: rotate(4deg);  }
+  .slot[data-seat="3"] { grid-area: 2 / 3; transform: rotate(7deg);  }
+
+  .slot .tag {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: -1.05rem; font-size: 0.67rem; opacity: 0.75; white-space: nowrap;
+  }
+  .slot[data-seat="2"] .tag { bottom: auto; top: -1.05rem; }
+
+  /* A card just laid down. */
+  .slot.fresh { animation: lay 0.42s cubic-bezier(.2,.9,.3,1.25) both; }
+  @keyframes lay {
+    from { opacity: 0; transform: scale(0.82) translateY(18px) rotate(0deg); }
+  }
+
+  /* When the trick is decided: the loser cards recede toward the winner. */
+  .trick-area.settled .slot:not(.winner) { opacity: 0.5; }
+  .trick-area.settled .slot.winner { z-index: 2; }
+  .trick-area.settled .slot.winner .card { box-shadow: 0 0 0 2px rgba(255,224,138,.95), 0 5px 14px rgba(0,0,0,.4); }
+  .trick-area.settled .slot.winner .tag { opacity: 1; font-weight: 700; color: #ffe08a; }
+
+  .trick-note {
+    grid-column: 1 / -1; grid-row: 3;
+    font-size: 0.8rem; opacity: 0.85; text-align: center;
+    min-height: 1.2rem; padding-top: 0.5rem;
+  }
+
+  /* ---------- trump dialog ---------- */
   /* ---------- trump dialog ---------- */
   .trump-choice { display: flex; gap: 0.45rem; flex-wrap: wrap; justify-content: center; margin-top: 0.7rem; }
   .trump-choice button { background: #fff; color: var(--fg); border-color: var(--rule); font-size: 0.9rem; }
@@ -181,10 +268,12 @@
 
   @media (max-width: 34rem) {
     body { font-size: 16px; }
-    .card { width: 2.6rem; height: 3.7rem; }
-    .card .rank { font-size: 0.9rem; }
-    .card .suit { font-size: 1rem; }
-    .table { min-height: 20rem; padding: 0.7rem; gap: 0.3rem; }
+    .card { width: 2.9rem; height: 4.2rem; }
+    .card .idx { font-size: 0.7rem; }
+    .table { min-height: 23rem; padding: 0.7rem; gap: 0.3rem; }
+    .trick-area { width: 12.5rem; height: 11.5rem; }
+    .slot .tag { font-size: 0.6rem; bottom: -0.95rem; }
+    .hand { gap: 0.25rem; }
   }
 </style>
 </head>
@@ -229,6 +318,16 @@
       </div>
 
       <div class="field">
+        <label for="tempo">Tempo</label>
+        <select id="tempo">
+          <option value="1.6">ruhig — zum Mitdenken</option>
+          <option value="1" selected>normal</option>
+          <option value="0.6">zügig</option>
+        </select>
+        <div class="hint">Wie lange die Engine-Züge und der fertige Stich stehen bleiben.</div>
+      </div>
+
+      <div class="field">
         <label for="samples">Coach</label>
         <select id="samples">
           <option value="0">aus</option>
@@ -251,20 +350,21 @@
   <div id="game" hidden>
     <div class="table">
       <div class="seat seat-top" data-seat="2">
-        <div class="who"></div><div class="meta"></div><div class="backs"></div>
+        <div class="who"></div><div class="meta"></div><div class="won"></div><div class="backs"></div>
       </div>
       <div class="seat seat-left" data-seat="1">
-        <div class="who"></div><div class="meta"></div><div class="backs"></div>
+        <div class="who"></div><div class="meta"></div><div class="won"></div><div class="backs"></div>
       </div>
       <div class="seat seat-right" data-seat="3">
-        <div class="who"></div><div class="meta"></div><div class="backs"></div>
+        <div class="who"></div><div class="meta"></div><div class="won"></div><div class="backs"></div>
       </div>
       <div class="trick">
-        <div class="trick-cards" id="trick"></div>
-        <div class="trick-note" id="tricknote"></div>
+        <div class="trick-area" id="trick"></div>
       </div>
+      <div class="trick-note" id="tricknote"></div>
     </div>
 
+    <div class="took" id="took"></div>
     <div class="hand-label" id="handlabel"></div>
     <div class="hand" id="hand"></div>
     <div class="trump-choice" id="trumpchoice"></div>
@@ -281,6 +381,7 @@
   <div class="loading" id="loading" hidden>Engine wird geladen …</div>
 </div>
 
+<script src="cards.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

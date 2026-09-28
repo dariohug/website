@@ -11,14 +11,7 @@
  */
 "use strict";
 
-const SUITS = [
-  { name: "Eichel",   glyph: "♦", red: true  },  // Swisslos maps Eichel to diamonds
-  { name: "Rosen",    glyph: "♥", red: true  },
-  { name: "Schilten", glyph: "♠", red: false },
-  { name: "Schellen", glyph: "♣", red: false },
-];
-const RANKS = ["A", "K", "O", "U", "10", "9", "8", "7", "6"];
-const TRUMP_NAMES = ["Eichel ♦", "Rosen ♥", "Schilten ♠", "Schellen ♣", "Obenabe", "Undeufe"];
+const TRUMP_NAMES = ["Eichel", "Rosen", "Schilten", "Schellen", "Obenabe", "Undeufe"];
 const MULT = [1, 1, 2, 2, 3, 3];
 const SEAT_NAMES = ["Du", "Links", "Partner", "Rechts"];
 const ACT_TRUMP = 36, ACT_PUSH = 42;
@@ -63,15 +56,12 @@ function call(type, args) {
  * Rendering helpers
  * ------------------------------------------------------------------ */
 function cardEl(card, { small = false } = {}) {
-  const suit = SUITS[Math.floor(card / 9)];
-  const el = document.createElement("div");
-  el.className = "card" + (suit.red ? " red" : "") + (small ? " small" : "");
-  el.innerHTML = `<span class="rank">${RANKS[card % 9]}</span><span class="suit">${suit.glyph}</span>`;
-  el.title = `${suit.name} ${RANKS[card % 9]}`;
+  const el = JassCards.cardFace(card);
+  if (small) el.classList.add("small");
   return el;
 }
 
-const cardName = (c) => `${SUITS[Math.floor(c / 9)].name} ${RANKS[c % 9]}`;
+const cardName = (c) => JassCards.cardTitle(c);
 
 function setStatus(text) { $("status").textContent = text; }
 function showError(text) { $("error").textContent = text; }
@@ -87,6 +77,17 @@ function log(text, cls) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* Every pause goes through here, so one setting controls the pace. The engine
+   answers in ~100 ms, far too quick to follow, so these are deliberate waits
+   rather than computation. */
+const PACE = {
+  move: 900,        // after a card is laid, before the next seat acts
+  settle: 700,      // all four cards up, before the winner is marked
+  trick: 2100,      // how long the finished trick stays on the table
+  forced: 650,      // a card that had no alternative
+};
+const pause = (kind) => sleep(PACE[kind] * G.tempo);
+
 /* ------------------------------------------------------------------ *
  * Game state (only what the page is allowed to know)
  * ------------------------------------------------------------------ */
@@ -95,6 +96,7 @@ const G = {
   mode: "solo",
   rules: 0,
   samples: 64,
+  tempo: 1,             // multiplies every pause; 1 = normal
   mine: [0],
   state: null,
   busy: false,
@@ -150,42 +152,57 @@ function render() {
     if (!mineSeat) {
       for (let i = 0; i < s.counts[seat]; i++) {
         const b = document.createElement("div");
-        b.className = "back";
+        b.className = "mini-back";
         backs.appendChild(b);
       }
     }
+
+    // Two quiet markers: who is about to lead, and who just took the trick.
+    const leadingSeat = G.lastTrick && s.nPlayed % 4 === 0 ? G.lastTrick.winner : s.trickFirst;
+    el.classList.toggle("leads", s.phase === "play" && !s.done && seat === leadingSeat);
+    const justWon = !!(G.lastTrick && G.lastTrick.settled &&
+                       G.lastTrick.winner === seat && s.nPlayed % 4 === 0);
+    el.classList.toggle("just-won", justWon);
+    el.querySelector(".won").textContent = justWon ? "Stich \u2014 spielt aus" : "";
   }
 
-  // Current trick, or the one that just finished.
+  // Current trick, or the one that just finished, each card in front of its seat.
   const trick = $("trick");
-  trick.innerHTML = "";
   const inTrick = s.nPlayed % 4;
   const showLast = inTrick === 0 && G.lastTrick;
   const cards = showLast ? G.lastTrick.cards
                          : s.history.slice(s.nPlayed - inTrick, s.nPlayed);
   let seat = showLast ? G.lastTrick.leader : s.trickFirst;
-  for (const card of cards) {
-    const holder = document.createElement("div");
-    holder.style.textAlign = "center";
-    const lbl = document.createElement("div");
-    lbl.style.cssText = "font-size:0.7rem;opacity:0.8;margin-bottom:2px";
-    lbl.textContent = SEAT_NAMES[seat] + (showLast && seat === G.lastTrick.winner ? " \u2605" : "");
-    holder.appendChild(lbl);
-    const c = cardEl(card);
-    if (showLast && seat !== G.lastTrick.winner) c.style.opacity = "0.55";
-    holder.appendChild(c);
-    trick.appendChild(holder);
-    seat = nextSeat(seat);
-  }
-  if (G.pending && !showLast) {
-    const holder = document.createElement("div");
-    holder.style.textAlign = "center";
-    const lbl = document.createElement("div");
-    lbl.style.cssText = "font-size:0.7rem;opacity:0.8;margin-bottom:2px";
-    lbl.textContent = SEAT_NAMES[G.pending.seat];
-    holder.appendChild(lbl);
-    holder.appendChild(cardEl(G.pending.card));
-    trick.appendChild(holder);
+
+  const laid = [];
+  for (const card of cards) { laid.push({ seat, card }); seat = nextSeat(seat); }
+  if (G.pending && !showLast) laid.push({ seat: G.pending.seat, card: G.pending.card });
+
+  const settled = !!(showLast && G.lastTrick.settled);
+  trick.classList.toggle("settled", settled);
+  // Reuse slots already on the table, so only the card just played animates in.
+  const keep = new Set(laid.map((l) => l.seat));
+  for (const el of [...trick.children])
+    if (!keep.has(Number(el.dataset.seat))) el.remove();
+
+  for (const { seat: sp, card } of laid) {
+    let slot = trick.querySelector(`.slot[data-seat="${sp}"]`);
+    if (slot && Number(slot.dataset.card) === card) {
+      slot.classList.toggle("winner", settled && sp === G.lastTrick.winner);
+      continue;                                   // already drawn, leave it alone
+    }
+    if (slot) slot.remove();
+    slot = document.createElement("div");
+    slot.className = "slot fresh";
+    slot.dataset.seat = String(sp);
+    slot.dataset.card = String(card);
+    slot.appendChild(cardEl(card));
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.textContent = SEAT_NAMES[sp];
+    slot.appendChild(tag);
+    if (settled && sp === G.lastTrick.winner) slot.classList.add("winner");
+    trick.appendChild(slot);
   }
 
   // header note
@@ -216,6 +233,16 @@ function renderHand() {
     .slice().sort((a, b) => a - b);
   const myTurn = s.isMine && s.phase === "play";
   const legal = new Set(myTurn ? s.legal : []);
+
+  // Seats the human plays have no seat panel, so say it here instead.
+  const took = $("took");
+  const tookIt = !!(G.lastTrick && G.lastTrick.settled && G.mine.includes(G.lastTrick.winner));
+  took.classList.toggle("on", tookIt);
+  took.textContent = tookIt
+    ? (G.lastTrick.winner === 0
+        ? "Du hast den Stich \u2014 du spielst aus"
+        : `${SEAT_NAMES[G.lastTrick.winner]} hat den Stich \u2014 spielt aus`)
+    : "";
 
   label.textContent = G.mine.length > 1
     ? `Hand von ${SEAT_NAMES[seatToShow]}${myTurn ? " — du bist am Zug" : ""}`
@@ -405,15 +432,21 @@ async function humanPlays(card) {
    again or the round is over. */
 async function advance() {
   for (let guard = 0; guard < 80; guard++) {
-    const s = G.state;
-    if (s.done) return finish();
-
-    // Let a freshly completed trick sit on the table before play moves on.
+    // A finished trick gets its own beat: all four cards up, then the winner
+    // is marked and the trick sits there long enough to read. This runs before
+    // the done check so the ninth trick is shown too, not skipped to the result.
     if (G.lastTrick && !G.lastTrick.shown) {
       G.lastTrick.shown = true;
+      G.lastTrick.settled = false;
       render();
-      await sleep(900);
+      await pause("settle");
+      G.lastTrick.settled = true;
+      render();
+      await pause("trick");
     }
+
+    const s = G.state;
+    if (s.done) return finish();
 
     if (s.isMine) {
       // A single legal card is not a decision; play it and say so.
@@ -422,7 +455,7 @@ async function advance() {
         log(`${SEAT_NAMES[s.toMove]} spielt ${cardName(c)} (einzige erlaubte Karte)`, "sys");
         setState(await call("play", { action: c }));
         render();
-        await sleep(280);
+        await pause("forced");
         continue;
       }
       render();
@@ -441,8 +474,8 @@ async function advance() {
     setStatus(`${SEAT_NAMES[res.seat]}: ${Math.round(took)} ms`);
     setState(res);
     render();
-    const justFinishedTrick = G.state.nPlayed % 4 === 0 && G.state.nPlayed > 0 && !G.state.done;
-    await sleep(justFinishedTrick ? 1100 : Math.max(0, 420 - took));
+    // The card is down; let it be seen before the next seat answers.
+    await sleep(Math.max(0, PACE.move * G.tempo - took));
   }
 }
 
@@ -496,6 +529,7 @@ $("start").onclick = async () => {
   G.mode = $("mode").value;
   G.rules = Number($("rules").value);
   G.samples = Number($("samples").value);
+  G.tempo = Number($("tempo").value) || 1;
   G.mine = G.mode === "team" ? [0, 2] : [0];
   G.losses = [];
 
